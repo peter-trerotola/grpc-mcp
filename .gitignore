@@ -1,0 +1,39 @@
+# Binaries (in root directory)
+/grpc-mcp-server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local config (may contain secrets)
+grpc-mcp.yaml
+*.local.yaml
+
+# Vendor directory (if not committing deps)
+# vendor/
+
+# Debug files
+debug
+*.log

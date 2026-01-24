@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package testutil;
+
+option go_package = "github.com/grpc-mcp/grpc-mcp/internal/testutil;testutil";
+
+// TestService provides various RPC types for testing.
+service TestService {
+  // Unary RPC
+  rpc Echo(EchoRequest) returns (EchoResponse);
+
+  // Server streaming RPC
+  rpc StreamNumbers(StreamRequest) returns (stream NumberResponse);
+
+  // Client streaming RPC
+  rpc SumNumbers(stream NumberRequest) returns (SumResponse);
+
+  // Bidirectional streaming RPC
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+
+  // Error testing
+  rpc FailAlways(EchoRequest) returns (EchoResponse);
+}
+
+message EchoRequest {
+  string message = 1;
+  int32 count = 2;
+  bool uppercase = 3;
+}
+
+message EchoResponse {
+  string message = 1;
+  int32 length = 2;
+}
+
+message StreamRequest {
+  int32 start = 1;
+  int32 end = 2;
+}
+
+message NumberResponse {
+  int32 value = 1;
+}
+
+message NumberRequest {
+  int32 value = 1;
+}
+
+message SumResponse {
+  int64 total = 1;
+  int32 count = 2;
+}
+
+message ChatMessage {
+  string user = 1;
+  string text = 2;
+  int64 timestamp = 3;
+}
+
+// ComplexService tests more complex proto types.
+service ComplexService {
+  rpc Process(ComplexRequest) returns (ComplexResponse);
+}
+
+message ComplexRequest {
+  string id = 1;
+  NestedMessage nested = 2;
+  repeated string tags = 3;
+  map<string, int32> metadata = 4;
+  Status status = 5;
+  oneof payload {
+    string text_payload = 6;
+    bytes binary_payload = 7;
+  }
+}
+
+message NestedMessage {
+  string field1 = 1;
+  int32 field2 = 2;
+  NestedMessage recursive = 3;
+}
+
+enum Status {
+  STATUS_UNKNOWN = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_INACTIVE = 2;
+}
+
+message ComplexResponse {
+  string result = 1;
+  repeated NestedMessage items = 2;
+}

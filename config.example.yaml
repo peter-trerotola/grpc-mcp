@@ -1,0 +1,52 @@
+# grpc-mcp.yaml - Example configuration
+
+server:
+  name: "grpc-mcp"
+  version: "1.0.0"
+  transport: "stdio"  # or "sse"
+  # address: ":8080"  # Required for SSE transport
+
+endpoints:
+  # Plaintext (development)
+  - name: "local-api"
+    address: "localhost:50051"
+    auth:
+      type: "none"
+    tls:
+      enabled: false
+    exclude:
+      - "grpc.reflection.*"
+      - "grpc.health.*"
+    healthCheck:
+      enabled: true
+      interval: 30s
+
+  # Bearer token authentication
+  # - name: "auth-api"
+  #   address: "api.example.com:443"
+  #   auth:
+  #     type: "bearer"
+  #     bearerToken: "${AUTH_TOKEN}"  # env var expansion
+  #   tls:
+  #     enabled: true
+
+  # API key in header
+  # - name: "external-api"
+  #   address: "external.example.com:443"
+  #   auth:
+  #     type: "api-key"
+  #     apiKey:
+  #       header: "x-api-key"
+  #       value: "${API_KEY}"
+  #   tls:
+  #     enabled: true
+
+  # Mutual TLS
+  # - name: "secure-internal"
+  #   address: "secure.internal:443"
+  #   auth:
+  #     type: "mtls"
+  #     mtls:
+  #       certFile: "/certs/client.pem"
+  #       keyFile: "/certs/client-key.pem"
+  #       caFile: "/certs/ca.pem"
