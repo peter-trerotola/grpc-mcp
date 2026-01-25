@@ -153,10 +153,10 @@ func TestEndpointConfig_Validate_EmptyName(t *testing.T) {
 
 func TestEndpointConfig_Validate_InvalidName(t *testing.T) {
 	testCases := []string{
-		"123abc",     // starts with number
-		"my api",     // contains space
-		"my.api",     // contains dot
-		"my@api",     // contains special char
+		"123abc", // starts with number
+		"my api", // contains space
+		"my.api", // contains dot
+		"my@api", // contains special char
 	}
 
 	for _, name := range testCases {

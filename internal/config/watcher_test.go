@@ -178,12 +178,12 @@ func TestDiffConfigs(t *testing.T) {
 	ep2Updated := EndpointConfig{Name: "ep2", Address: "localhost:60062"}
 
 	tests := []struct {
-		name     string
-		oldCfg   *Config
-		newCfg   *Config
-		added    []string
-		removed  []string
-		updated  []string
+		name    string
+		oldCfg  *Config
+		newCfg  *Config
+		added   []string
+		removed []string
+		updated []string
 	}{
 		{
 			name:    "nil old config",

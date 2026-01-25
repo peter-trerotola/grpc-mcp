@@ -28,9 +28,8 @@ func TestInvoker_Unary_Direct(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -57,7 +56,10 @@ func TestInvoker_Unary_Direct(t *testing.T) {
 		t.Fatalf("failed to invoke: %v", err)
 	}
 
-	dynResp := resp.(*dynamic.Message)
+	dynResp, ok := resp.(*dynamic.Message)
+	if !ok {
+		t.Fatal("expected *dynamic.Message response")
+	}
 	msg, _ := dynResp.TryGetFieldByName("message")
 	if msg != "Hello, World!" {
 		t.Errorf("expected message 'Hello, World!', got %v", msg)
@@ -70,7 +72,10 @@ func TestInvoker_Unary_Direct(t *testing.T) {
 		t.Fatalf("failed to invoke: %v", err)
 	}
 
-	dynResp = resp.(*dynamic.Message)
+	dynResp, ok = resp.(*dynamic.Message)
+	if !ok {
+		t.Fatal("expected *dynamic.Message response")
+	}
 	msg, _ = dynResp.TryGetFieldByName("message")
 	if msg != "HELLO, WORLD!" {
 		t.Errorf("expected message 'HELLO, WORLD!', got %v", msg)
@@ -88,9 +93,8 @@ func TestInvoker_UnaryError_Direct(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -129,9 +133,8 @@ func TestInvoker_ServerStream_Direct(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -161,7 +164,10 @@ func TestInvoker_ServerStream_Direct(t *testing.T) {
 		if err != nil {
 			break
 		}
-		dynResp := resp.(*dynamic.Message)
+		dynResp, ok := resp.(*dynamic.Message)
+		if !ok {
+			t.Fatal("expected *dynamic.Message response")
+		}
 		val, _ := dynResp.TryGetFieldByName("value")
 		responses = append(responses, val.(int32))
 	}
@@ -188,9 +194,8 @@ func TestInvoker_ClientStream_Direct(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -225,7 +230,10 @@ func TestInvoker_ClientStream_Direct(t *testing.T) {
 		t.Fatalf("failed to receive: %v", err)
 	}
 
-	dynResp := resp.(*dynamic.Message)
+	dynResp, ok := resp.(*dynamic.Message)
+	if !ok {
+		t.Fatal("expected *dynamic.Message response")
+	}
 	total, _ := dynResp.TryGetFieldByName("total")
 	count, _ := dynResp.TryGetFieldByName("count")
 
@@ -248,9 +256,8 @@ func TestInvoker_BidiStream_Direct(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -294,7 +301,10 @@ func TestInvoker_BidiStream_Direct(t *testing.T) {
 		if err != nil {
 			break
 		}
-		dynResp := resp.(*dynamic.Message)
+		dynResp, ok := resp.(*dynamic.Message)
+		if !ok {
+			t.Fatal("expected *dynamic.Message response")
+		}
 		text, _ := dynResp.TryGetFieldByName("text")
 		responses = append(responses, text.(string))
 	}

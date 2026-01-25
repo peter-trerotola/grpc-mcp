@@ -15,14 +15,14 @@ type WatchCallback func(cfg *Config, err error)
 type Watcher struct {
 	mu sync.Mutex
 
-	path           string
-	fsWatcher      *fsnotify.Watcher
-	callback       WatchCallback
-	debounceDelay  time.Duration
-	debounceTimer  *time.Timer
-	lastConfig     *Config
-	stopCh         chan struct{}
-	running        bool
+	path          string
+	fsWatcher     *fsnotify.Watcher
+	callback      WatchCallback
+	debounceDelay time.Duration
+	debounceTimer *time.Timer
+	lastConfig    *Config
+	stopCh        chan struct{}
+	running       bool
 }
 
 // NewWatcher creates a new config watcher.

@@ -241,13 +241,6 @@ func TestHandler_NewHandler(t *testing.T) {
 	}
 }
 
-// mockInvoker is a mock implementation for testing handler logic
-type mockInvoker struct {
-	invokeFunc func(ctx context.Context, serviceName, methodName string, input interface{}) error
-	response   interface{}
-	err        error
-}
-
 func TestHandler_HandleClientStream_InputValidation(t *testing.T) {
 	handler := NewHandler(nil, "test.Service", "BatchCreate", true, false)
 
