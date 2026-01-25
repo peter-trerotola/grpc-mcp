@@ -172,10 +172,8 @@ func TestRegistry_Close(t *testing.T) {
 
 	_ = r.AddEndpoint(ctx, cfg)
 
-	err := r.Close()
-	if err != nil {
-		// May fail if connection wasn't established, which is expected
-	}
+	// Close may fail if connection wasn't established, which is expected
+	_ = r.Close()
 
 	if len(r.ListEndpoints()) != 0 {
 		t.Error("expected empty endpoint list after close")

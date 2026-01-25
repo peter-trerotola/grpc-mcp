@@ -25,9 +25,8 @@ func TestReflectionClient_ListServices(t *testing.T) {
 
 	// Connect to server
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)
@@ -170,9 +169,8 @@ func TestReflectionClient_DiscoverServices(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 
 	ctx := context.Background()
-	conn, err := grpc.DialContext(ctx, ts.Address(),
+	conn, err := grpc.NewClient(ts.Address(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
 	)
 	if err != nil {
 		t.Fatalf("failed to connect: %v", err)

@@ -35,10 +35,10 @@ type EndpointConfig struct {
 
 // AuthConfig specifies authentication settings.
 type AuthConfig struct {
-	Type        string        `yaml:"type"` // "none", "bearer", "api-key", "mtls"
-	BearerToken string        `yaml:"bearerToken"`
-	APIKey      APIKeyConfig  `yaml:"apiKey"`
-	MTLS        MTLSConfig    `yaml:"mtls"`
+	Type        string       `yaml:"type"` // "none", "bearer", "api-key", "mtls"
+	BearerToken string       `yaml:"bearerToken"`
+	APIKey      APIKeyConfig `yaml:"apiKey"`
+	MTLS        MTLSConfig   `yaml:"mtls"`
 }
 
 // APIKeyConfig holds API key authentication settings.

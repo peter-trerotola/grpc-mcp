@@ -49,10 +49,10 @@ func (c *Client) Connect(ctx context.Context) error {
 		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(64*1024*1024)), // 64MB max message
 	)
 
-	conn, err := grpc.DialContext(ctx, c.cfg.Address, dialOpts...)
+	conn, err := grpc.NewClient(c.cfg.Address, dialOpts...)
 	if err != nil {
 		c.lastError = err
-		return fmt.Errorf("dialing %s: %w", c.cfg.Address, err)
+		return fmt.Errorf("creating client for %s: %w", c.cfg.Address, err)
 	}
 
 	c.conn = conn
@@ -154,13 +154,13 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 		// Trigger a connection attempt
 		conn.Connect()
 		// Wait briefly for connection
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
-		return c.WaitForReady(ctx)
+		return c.WaitForReady(timeoutCtx)
 	case connectivity.Connecting:
-		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
-		return c.WaitForReady(ctx)
+		return c.WaitForReady(timeoutCtx)
 	default:
 		return fmt.Errorf("connection in state: %s", state)
 	}

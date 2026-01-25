@@ -172,11 +172,11 @@ func (i *Invoker) invokeClientStream(ctx context.Context, stub grpcdynamic.Stub,
 	// Send all requests
 	for _, reqData := range requests {
 		req := msgFactory.NewDynamicMessage(inputDesc)
-		if err := populateMessage(req, reqData); err != nil {
-			return nil, fmt.Errorf("populating request: %w", err)
+		if populateErr := populateMessage(req, reqData); populateErr != nil {
+			return nil, fmt.Errorf("populating request: %w", populateErr)
 		}
-		if err := stream.SendMsg(req); err != nil {
-			return &InvokeResult{Error: err}, nil
+		if sendErr := stream.SendMsg(req); sendErr != nil {
+			return &InvokeResult{Error: sendErr}, nil
 		}
 	}
 
