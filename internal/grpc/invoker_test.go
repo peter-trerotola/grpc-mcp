@@ -169,7 +169,11 @@ func TestInvoker_ServerStream_Direct(t *testing.T) {
 			t.Fatal("expected *dynamic.Message response")
 		}
 		val, _ := dynResp.TryGetFieldByName("value")
-		responses = append(responses, val.(int32))
+		intVal, ok := val.(int32)
+		if !ok {
+			t.Fatal("expected int32 value")
+		}
+		responses = append(responses, intVal)
 	}
 
 	if len(responses) != 5 {
@@ -220,8 +224,8 @@ func TestInvoker_ClientStream_Direct(t *testing.T) {
 	for i := int32(1); i <= 5; i++ {
 		req := msgFactory.NewDynamicMessage(sumMethod.GetInputType())
 		req.SetFieldByName("value", i)
-		if err := stream.SendMsg(req); err != nil {
-			t.Fatalf("failed to send: %v", err)
+		if sendErr := stream.SendMsg(req); sendErr != nil {
+			t.Fatalf("failed to send: %v", sendErr)
 		}
 	}
 
@@ -237,11 +241,19 @@ func TestInvoker_ClientStream_Direct(t *testing.T) {
 	total, _ := dynResp.TryGetFieldByName("total")
 	count, _ := dynResp.TryGetFieldByName("count")
 
-	if total.(int64) != 15 {
-		t.Errorf("expected total 15, got %v", total)
+	totalVal, ok := total.(int64)
+	if !ok {
+		t.Fatal("expected int64 total")
 	}
-	if count.(int32) != 5 {
-		t.Errorf("expected count 5, got %v", count)
+	if totalVal != 15 {
+		t.Errorf("expected total 15, got %v", totalVal)
+	}
+	countVal, ok := count.(int32)
+	if !ok {
+		t.Fatal("expected int32 count")
+	}
+	if countVal != 5 {
+		t.Errorf("expected count 5, got %v", countVal)
 	}
 }
 
@@ -306,7 +318,11 @@ func TestInvoker_BidiStream_Direct(t *testing.T) {
 			t.Fatal("expected *dynamic.Message response")
 		}
 		text, _ := dynResp.TryGetFieldByName("text")
-		responses = append(responses, text.(string))
+		textVal, ok := text.(string)
+		if !ok {
+			t.Fatal("expected string text")
+		}
+		responses = append(responses, textVal)
 	}
 
 	if len(responses) != 2 {
