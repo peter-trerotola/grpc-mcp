@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
 )
 
 func TestBearerTokenCredentials_GetRequestMetadata(t *testing.T) {

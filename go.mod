@@ -1,4 +1,4 @@
-module github.com/grpc-mcp/grpc-mcp
+module github.com/peter-trerotola/grpc-mcp
 
 go 1.23.0
 

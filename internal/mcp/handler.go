@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
 )
 
 // Handler handles MCP tool invocations by calling gRPC methods.

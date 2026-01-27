@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
-	"github.com/grpc-mcp/grpc-mcp/internal/mcp"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
+	"github.com/peter-trerotola/grpc-mcp/internal/mcp"
 )
 
 // Common errors

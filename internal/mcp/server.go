@@ -9,7 +9,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
 )
 
 // Server wraps the MCP server with grpc-mcp specific functionality.

@@ -12,9 +12,9 @@ import (
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
-	"github.com/grpc-mcp/grpc-mcp/internal/mcp"
-	"github.com/grpc-mcp/grpc-mcp/internal/registry"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
+	"github.com/peter-trerotola/grpc-mcp/internal/mcp"
+	"github.com/peter-trerotola/grpc-mcp/internal/registry"
 )
 
 var (
