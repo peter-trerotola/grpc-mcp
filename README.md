@@ -16,14 +16,14 @@ A dynamic gRPC to MCP (Model Context Protocol) bridge that exposes gRPC services
 
 ```bash
 # Clone the repository
-git clone https://github.com/grpc-mcp/grpc-mcp.git
+git clone https://github.com/peter-trerotola/grpc-mcp.git
 cd grpc-mcp
 
 # Build
 go build -o grpc-mcp-server ./cmd/grpc-mcp-server
 
 # Or install directly
-go install github.com/grpc-mcp/grpc-mcp/cmd/grpc-mcp-server@latest
+go install github.com/peter-trerotola/grpc-mcp/cmd/grpc-mcp-server@latest
 ```
 
 ## Quick Start
