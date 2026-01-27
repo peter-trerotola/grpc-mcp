@@ -9,7 +9,11 @@ import (
 )
 
 // Converter converts protobuf descriptors to JSON Schema.
-type Converter struct {
+type Converter struct{}
+
+// conversionContext holds the state for a single conversion operation.
+// This is not shared across goroutines.
+type conversionContext struct {
 	// visited tracks visited message types to handle recursion
 	visited map[string]bool
 	// definitions stores reusable schema definitions
@@ -18,22 +22,22 @@ type Converter struct {
 
 // NewConverter creates a new schema converter.
 func NewConverter() *Converter {
-	return &Converter{
-		visited:     make(map[string]bool),
-		definitions: make(map[string]*JSONSchema),
-	}
+	return &Converter{}
 }
 
 // MessageToSchema converts a message descriptor to a JSON Schema.
 func (c *Converter) MessageToSchema(msg *desc.MessageDescriptor) *JSONSchema {
-	c.visited = make(map[string]bool)
-	c.definitions = make(map[string]*JSONSchema)
+	// Create a fresh context for this conversion - not shared with other goroutines
+	ctx := &conversionContext{
+		visited:     make(map[string]bool),
+		definitions: make(map[string]*JSONSchema),
+	}
 
-	schema := c.convertMessage(msg)
+	schema := c.convertMessage(ctx, msg)
 
 	// Add definitions if any were created
-	if len(c.definitions) > 0 {
-		schema.Definitions = c.definitions
+	if len(ctx.definitions) > 0 {
+		schema.Definitions = ctx.definitions
 	}
 
 	return schema
@@ -56,16 +60,16 @@ func (c *Converter) MethodOutputSchema(method *desc.MethodDescriptor) *JSONSchem
 }
 
 // convertMessage converts a message descriptor to a schema.
-func (c *Converter) convertMessage(msg *desc.MessageDescriptor) *JSONSchema {
+func (c *Converter) convertMessage(ctx *conversionContext, msg *desc.MessageDescriptor) *JSONSchema {
 	fullName := msg.GetFullyQualifiedName()
 
 	// Handle recursion - if we've seen this message before, use a reference
-	if c.visited[fullName] {
+	if ctx.visited[fullName] {
 		return &JSONSchema{
 			Ref: "#/$defs/" + sanitizeRefName(fullName),
 		}
 	}
-	c.visited[fullName] = true
+	ctx.visited[fullName] = true
 
 	schema := NewObjectSchema()
 	schema.Title = msg.GetName()
@@ -75,7 +79,7 @@ func (c *Converter) convertMessage(msg *desc.MessageDescriptor) *JSONSchema {
 	}
 
 	// Handle oneofs
-	oneofSchemas := c.collectOneofs(msg)
+	oneofSchemas := c.collectOneofs(ctx, msg)
 
 	// Process fields
 	for _, field := range msg.GetFields() {
@@ -84,7 +88,7 @@ func (c *Converter) convertMessage(msg *desc.MessageDescriptor) *JSONSchema {
 			continue
 		}
 
-		fieldSchema := c.convertField(field)
+		fieldSchema := c.convertField(ctx, field)
 		schema.AddProperty(c.fieldName(field), fieldSchema, false)
 	}
 
@@ -96,13 +100,13 @@ func (c *Converter) convertMessage(msg *desc.MessageDescriptor) *JSONSchema {
 	}
 
 	// Store in definitions for potential reuse
-	c.definitions[sanitizeRefName(fullName)] = schema
+	ctx.definitions[sanitizeRefName(fullName)] = schema
 
 	return schema
 }
 
 // collectOneofs collects oneof field groups.
-func (c *Converter) collectOneofs(msg *desc.MessageDescriptor) map[string]*JSONSchema {
+func (c *Converter) collectOneofs(ctx *conversionContext, msg *desc.MessageDescriptor) map[string]*JSONSchema {
 	oneofs := make(map[string]*JSONSchema)
 
 	for _, oneof := range msg.GetOneOfs() {
@@ -117,7 +121,7 @@ func (c *Converter) collectOneofs(msg *desc.MessageDescriptor) map[string]*JSONS
 		}
 
 		for _, field := range oneof.GetChoices() {
-			fieldSchema := c.convertField(field)
+			fieldSchema := c.convertField(ctx, field)
 			wrapper := NewObjectSchema()
 			wrapper.AddProperty(c.fieldName(field), fieldSchema, false)
 			oneofSchema.OneOf = append(oneofSchema.OneOf, *wrapper)
@@ -130,15 +134,15 @@ func (c *Converter) collectOneofs(msg *desc.MessageDescriptor) map[string]*JSONS
 }
 
 // convertField converts a field descriptor to a schema.
-func (c *Converter) convertField(field *desc.FieldDescriptor) *JSONSchema {
+func (c *Converter) convertField(ctx *conversionContext, field *desc.FieldDescriptor) *JSONSchema {
 	var schema *JSONSchema
 
 	// Handle map fields
 	if field.IsMap() {
-		schema = c.convertMapField(field)
+		schema = c.convertMapField(ctx, field)
 	} else {
 		// Convert the base type
-		schema = c.convertFieldType(field)
+		schema = c.convertFieldType(ctx, field)
 
 		// Handle repeated fields (arrays)
 		if field.IsRepeated() && !field.IsMap() {
@@ -155,7 +159,7 @@ func (c *Converter) convertField(field *desc.FieldDescriptor) *JSONSchema {
 }
 
 // convertFieldType converts a field type to a schema.
-func (c *Converter) convertFieldType(field *desc.FieldDescriptor) *JSONSchema {
+func (c *Converter) convertFieldType(ctx *conversionContext, field *desc.FieldDescriptor) *JSONSchema {
 	fieldType := field.GetType()
 
 	switch fieldType {
@@ -205,7 +209,7 @@ func (c *Converter) convertFieldType(field *desc.FieldDescriptor) *JSONSchema {
 	// Message
 	case descriptorpb.FieldDescriptorProto_TYPE_MESSAGE,
 		descriptorpb.FieldDescriptorProto_TYPE_GROUP:
-		return c.convertMessage(field.GetMessageType())
+		return c.convertMessage(ctx, field.GetMessageType())
 
 	default:
 		return NewStringSchema()
@@ -213,12 +217,12 @@ func (c *Converter) convertFieldType(field *desc.FieldDescriptor) *JSONSchema {
 }
 
 // convertMapField converts a map field to a schema.
-func (c *Converter) convertMapField(field *desc.FieldDescriptor) *JSONSchema {
+func (c *Converter) convertMapField(ctx *conversionContext, field *desc.FieldDescriptor) *JSONSchema {
 	mapEntry := field.GetMessageType()
 
 	// Get value field type (field number 2 in map entry)
 	valueField := mapEntry.FindFieldByNumber(2)
-	valueSchema := c.convertFieldType(valueField)
+	valueSchema := c.convertFieldType(ctx, valueField)
 
 	return &JSONSchema{
 		Type:                 "object",
