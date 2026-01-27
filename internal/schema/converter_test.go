@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/jhump/protoreflect/desc/builder"
@@ -326,4 +327,55 @@ func TestJSONSchemaHelpers(t *testing.T) {
 	if len(enum.Enum) != 3 {
 		t.Errorf("expected 3 enum values, got %d", len(enum.Enum))
 	}
+}
+
+// TestConverter_Concurrent verifies that the Converter is safe for concurrent use.
+// This test should be run with -race to detect data races.
+func TestConverter_Concurrent(t *testing.T) {
+	// Build a message with nested types to exercise more code paths
+	inner := builder.NewMessage("Inner").
+		AddField(builder.NewField("value", builder.FieldTypeString()))
+
+	msg := builder.NewMessage("Message").
+		AddField(builder.NewField("id", builder.FieldTypeString())).
+		AddField(builder.NewField("count", builder.FieldTypeInt32())).
+		AddField(builder.NewField("data", builder.FieldTypeBytes())).
+		AddField(builder.NewField("inner", builder.FieldTypeMessage(inner))).
+		AddField(builder.NewField("items", builder.FieldTypeMessage(inner)).SetRepeated())
+
+	file := builder.NewFile("test.proto").
+		SetPackageName("test").
+		AddMessage(inner).
+		AddMessage(msg)
+
+	fd, err := file.Build()
+	if err != nil {
+		t.Fatalf("failed to build: %v", err)
+	}
+
+	msgDesc := fd.FindMessage("test.Message")
+	if msgDesc == nil {
+		t.Fatal("message not found")
+	}
+
+	// Use a single converter instance (simulates shared ToolGenerator.converter)
+	conv := NewConverter()
+
+	// Run concurrent conversions - this would cause "concurrent map writes" panic
+	// before the fix if run with -race
+	var wg sync.WaitGroup
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			schema := conv.MessageToSchema(msgDesc)
+			if schema.Type != "object" {
+				t.Errorf("expected object type, got %s", schema.Type)
+			}
+			if schema.Properties["inner"] == nil {
+				t.Error("expected inner property")
+			}
+		}()
+	}
+	wg.Wait()
 }
