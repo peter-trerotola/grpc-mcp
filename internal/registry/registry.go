@@ -264,6 +264,25 @@ func (r *Registry) StopHealthChecks() {
 	}
 }
 
+// RefreshAll forces a refresh of all connected endpoints and their tools.
+func (r *Registry) RefreshAll(ctx context.Context) {
+	r.mu.RLock()
+	endpoints := make([]*Endpoint, 0, len(r.endpoints))
+	for _, ep := range r.endpoints {
+		endpoints = append(endpoints, ep)
+	}
+	r.mu.RUnlock()
+
+	for _, endpoint := range endpoints {
+		if endpoint.IsConnected() {
+			r.refreshEndpoint(ctx, endpoint)
+		} else {
+			// Try to connect if not connected
+			r.connectEndpoint(ctx, endpoint)
+		}
+	}
+}
+
 // Close disconnects all endpoints and stops health checks.
 func (r *Registry) Close() error {
 	r.StopHealthChecks()

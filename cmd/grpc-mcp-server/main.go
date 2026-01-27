@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	mcplib "github.com/mark3labs/mcp-go/mcp"
 	"github.com/spf13/cobra"
 
 	"github.com/grpc-mcp/grpc-mcp/internal/config"
@@ -112,6 +113,9 @@ func startServer(ctx context.Context, cfg *config.Config, configPath string, wat
 	reg := registry.NewRegistry()
 	defer reg.Close()
 
+	// Register built-in tools
+	registerBuiltinTools(ctx, mcpServer, reg)
+
 	// Register callback to update MCP tools when endpoints change
 	reg.OnChange(func(event registry.RegistryEvent) {
 		switch event.Type {
@@ -204,4 +208,27 @@ func updateMCPTools(mcpServer *mcp.Server, reg *registry.Registry) {
 	mcpServer.NotifyToolsChanged()
 
 	fmt.Fprintf(os.Stderr, "Registered %d tools\n", len(tools))
+}
+
+// registerBuiltinTools registers built-in management tools.
+func registerBuiltinTools(ctx context.Context, mcpServer *mcp.Server, reg *registry.Registry) {
+	// Register the rebuild-tools tool
+	rebuildTool := mcplib.NewTool(
+		"grpc-mcp.rebuild-tools",
+		mcplib.WithDescription("Rebuild the list of available tools by re-discovering all gRPC services. Use this after adding new methods to your gRPC servers."),
+	)
+
+	mcpServer.RegisterBuiltinTool(rebuildTool, func(_ context.Context, _ mcplib.CallToolRequest) (*mcplib.CallToolResult, error) {
+		fmt.Fprintf(os.Stderr, "Rebuilding tools...\n")
+
+		// Refresh all endpoints
+		reg.RefreshAll(ctx)
+
+		// Update MCP tools
+		updateMCPTools(mcpServer, reg)
+
+		// Get the count of tools
+		tools := reg.GetAllTools()
+		return mcplib.NewToolResultText(fmt.Sprintf("Rebuilt tool list. Found %d tools from %d endpoints.", len(tools), len(reg.ListEndpoints()))), nil
+	})
 }
