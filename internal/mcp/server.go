@@ -145,3 +145,8 @@ type ToolRegistration struct {
 	Tool    mcp.Tool
 	Handler *Handler
 }
+
+// RegisterBuiltinTool registers a built-in tool that doesn't go through the normal handler flow.
+func (s *Server) RegisterBuiltinTool(tool mcp.Tool, handler func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error)) {
+	s.mcpServer.AddTool(tool, handler)
+}
