@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
 )
 
 // Client manages a gRPC connection to a single endpoint.

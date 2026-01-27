@@ -6,7 +6,7 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/builder"
 
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
 )
 
 func TestToolGenerator_GenerateTools(t *testing.T) {

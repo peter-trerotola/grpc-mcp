@@ -11,10 +11,10 @@ import (
 	"github.com/jhump/protoreflect/desc/builder"
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
-	"github.com/grpc-mcp/grpc-mcp/internal/mcp"
-	"github.com/grpc-mcp/grpc-mcp/internal/registry"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
+	"github.com/peter-trerotola/grpc-mcp/internal/mcp"
+	"github.com/peter-trerotola/grpc-mcp/internal/registry"
 )
 
 // TestToolGenerationFlow tests the complete flow from proto descriptors to MCP tools.

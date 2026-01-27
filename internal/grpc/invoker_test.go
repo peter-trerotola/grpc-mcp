@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/testutil"
+	"github.com/peter-trerotola/grpc-mcp/internal/testutil"
 )
 
 // TestInvoker tests use direct descriptors from the test server

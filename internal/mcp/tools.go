@@ -5,9 +5,9 @@ import (
 
 	"github.com/mark3labs/mcp-go/mcp"
 
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
-	"github.com/grpc-mcp/grpc-mcp/internal/schema"
-	"github.com/grpc-mcp/grpc-mcp/pkg/naming"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
+	"github.com/peter-trerotola/grpc-mcp/internal/schema"
+	"github.com/peter-trerotola/grpc-mcp/pkg/naming"
 )
 
 // ToolGenerator generates MCP tools from gRPC service information.

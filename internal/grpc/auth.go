@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
 )
 
 // PerRPCCredentials is a type alias for grpc.PerRPCCredentials.

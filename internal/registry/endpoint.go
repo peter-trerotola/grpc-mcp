@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/grpc-mcp/grpc-mcp/internal/config"
-	grpcclient "github.com/grpc-mcp/grpc-mcp/internal/grpc"
+	"github.com/peter-trerotola/grpc-mcp/internal/config"
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
 )
 
 // ErrNotConnected is returned when an operation requires a connected endpoint.
