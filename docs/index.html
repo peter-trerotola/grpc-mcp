@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>grpc-mcp</title>
+  <meta name="description" content="Bridge any gRPC service to the Model Context Protocol">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --text: #b0b0b0;
+      --bright: #e0e0e0;
+      --dim: #505050;
+      --green: #4af626;
+      --cyan: #00d4aa;
+      --accent: #58a6ff;
+      --border: #252525;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding: 64px 0 40px;
+    }
+
+    .prompt::before {
+      content: '$ ';
+      color: var(--green);
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--bright);
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      color: var(--dim);
+    }
+
+    .badges {
+      margin-top: 16px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .section {
+      border-top: 1px solid var(--border);
+      padding: 24px 0;
+    }
+
+    .section-label {
+      color: var(--dim);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      margin-bottom: 12px;
+    }
+
+    .cmd {
+      position: relative;
+      padding: 12px 40px 12px 16px;
+      background: #111;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      white-space: pre;
+      overflow-x: auto;
+      color: var(--green);
+    }
+
+    .cmd::before {
+      content: '> ';
+      color: var(--dim);
+    }
+
+    .cmd:last-of-type { margin-bottom: 0; }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 8px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      padding: 2px 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+    }
+
+    .copy-btn:hover { color: var(--text); border-color: var(--dim); }
+
+    .copy-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .alt-label {
+      color: var(--dim);
+      font-size: 12px;
+      margin: 4px 0;
+      padding-left: 16px;
+    }
+
+    .config-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+    }
+
+    .config-tab {
+      background: none;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      color: var(--dim);
+      padding: 6px 16px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    .config-tab.active {
+      color: var(--bright);
+      background: #111;
+      border-bottom: 1px solid #111;
+      margin-bottom: -1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .config-tab:hover:not(.active) { color: var(--text); }
+
+    .config-tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .config-block {
+      position: relative;
+      background: #111;
+      border: 1px solid var(--border);
+      padding: 16px;
+      overflow-x: auto;
+    }
+
+    .config-block pre {
+      margin: 0;
+      font-family: inherit;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .config-block code {
+      color: var(--text);
+    }
+
+    .config-block .copy-btn {
+      top: 8px;
+      right: 8px;
+    }
+
+    .config-block .c { color: var(--dim); }
+    .config-block .k { color: var(--cyan); }
+    .config-block .s { color: var(--green); }
+    .config-block .n { color: var(--bright); }
+
+    .hidden { display: none; }
+
+    .platform-note {
+      color: var(--dim);
+      font-size: 12px;
+      margin-top: 12px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .feature {
+      background: var(--bg);
+      padding: 16px;
+    }
+
+    .feature h3 {
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .feature h3::before {
+      content: '# ';
+      color: var(--dim);
+    }
+
+    .feature p {
+      color: var(--dim);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .links {
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    .links a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .links a:hover { color: var(--bright); text-decoration: underline; }
+
+    .links span { margin: 0 8px; color: var(--border); }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--green);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 40px 0 24px; }
+      .features { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="prompt">grpc-mcp</h1>
+      <p class="tagline">bridge any grpc service to the model context protocol</p>
+      <div class="badges">
+        <a href="https://github.com/peter-trerotola/grpc-mcp/actions/workflows/ci.yml"><img src="https://github.com/peter-trerotola/grpc-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+        <a href="https://github.com/peter-trerotola/grpc-mcp/releases"><img src="https://github.com/peter-trerotola/grpc-mcp/actions/workflows/release.yml/badge.svg" alt="Release"></a>
+        <a href="https://github.com/peter-trerotola/grpc-mcp/releases/latest"><img src="https://img.shields.io/github/v/release/peter-trerotola/grpc-mcp?color=3fb950" alt="Latest Release"></a>
+        <a href="https://goreportcard.com/report/github.com/peter-trerotola/grpc-mcp"><img src="https://goreportcard.com/badge/github.com/peter-trerotola/grpc-mcp" alt="Go Report Card"></a>
+        <a href="https://github.com/peter-trerotola/grpc-mcp/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+      </div>
+      <pre style="color: var(--cyan); font-size: 11px; line-height: 1.3; margin-top: 20px; overflow-x: auto;">    ┌─────────┐       ┌─────────┐
+    │  gRPC   │──────▶│   MCP   │
+    │ Service │◀──────│  Server │
+    └─────────┘       └─────────┘
+     protobuf           tools
+     reflection         prompts</pre>
+    </header>
+
+    <div class="section">
+      <div class="section-label">install</div>
+      <div class="cmd" id="curl-cmd">curl -sfL https://peter-trerotola.github.io/grpc-mcp/install.sh | sh<button class="copy-btn" aria-label="Copy curl install command" onclick="copy('curl-cmd')">cp</button></div>
+      <p class="alt-label">or</p>
+      <div class="cmd" id="go-cmd">go install github.com/peter-trerotola/grpc-mcp/cmd/grpc-mcp-server@latest<button class="copy-btn" aria-label="Copy go install command" onclick="copy('go-cmd')">cp</button></div>
+      <p class="platform-note">linux/darwin/windows &middot; amd64/arm64</p>
+    </div>
+
+    <div class="section">
+      <div class="section-label">config</div>
+      <div class="config-tabs" role="tablist">
+        <button class="config-tab active" role="tab" aria-selected="true" aria-controls="tab-minimal" onclick="showTab('minimal', this)">minimal</button>
+        <button class="config-tab" role="tab" aria-selected="false" aria-controls="tab-bearer" onclick="showTab('bearer', this)">bearer</button>
+        <button class="config-tab" role="tab" aria-selected="false" aria-controls="tab-mtls" onclick="showTab('mtls', this)">mtls</button>
+      </div>
+      <div class="config-block" id="tab-minimal" role="tabpanel" data-yaml="# grpc-mcp.yaml — plaintext local dev
+server:
+  name: &quot;grpc-mcp&quot;
+  transport: &quot;stdio&quot;
+
+endpoints:
+  - name: &quot;local-api&quot;
+    address: &quot;localhost:50051&quot;
+    tls:
+      enabled: false">
+        <button class="copy-btn" aria-label="Copy minimal config" onclick="copyText(this.parentElement.dataset.yaml, this)">cp</button>
+        <pre><code><span class="c"># grpc-mcp.yaml — plaintext local dev</span>
+<span class="k">server</span>:
+  <span class="k">name</span>: <span class="s">"grpc-mcp"</span>
+  <span class="k">transport</span>: <span class="s">"stdio"</span>
+
+<span class="k">endpoints</span>:
+  - <span class="k">name</span>: <span class="s">"local-api"</span>
+    <span class="k">address</span>: <span class="s">"localhost:50051"</span>
+    <span class="k">tls</span>:
+      <span class="k">enabled</span>: <span class="n">false</span></code></pre>
+      </div>
+      <div class="config-block hidden" id="tab-bearer" role="tabpanel" data-yaml="# grpc-mcp.yaml — bearer token auth
+server:
+  name: &quot;grpc-mcp&quot;
+  transport: &quot;stdio&quot;
+
+endpoints:
+  - name: &quot;auth-api&quot;
+    address: &quot;api.example.com:443&quot;
+    auth:
+      type: &quot;bearer&quot;
+      bearerToken: &quot;${AUTH_TOKEN}&quot;
+    tls:
+      enabled: true">
+        <button class="copy-btn" aria-label="Copy bearer config" onclick="copyText(this.parentElement.dataset.yaml, this)">cp</button>
+        <pre><code><span class="c"># grpc-mcp.yaml — bearer token auth</span>
+<span class="k">server</span>:
+  <span class="k">name</span>: <span class="s">"grpc-mcp"</span>
+  <span class="k">transport</span>: <span class="s">"stdio"</span>
+
+<span class="k">endpoints</span>:
+  - <span class="k">name</span>: <span class="s">"auth-api"</span>
+    <span class="k">address</span>: <span class="s">"api.example.com:443"</span>
+    <span class="k">auth</span>:
+      <span class="k">type</span>: <span class="s">"bearer"</span>
+      <span class="k">bearerToken</span>: <span class="s">"${AUTH_TOKEN}"</span>
+    <span class="k">tls</span>:
+      <span class="k">enabled</span>: <span class="n">true</span></code></pre>
+      </div>
+      <div class="config-block hidden" id="tab-mtls" role="tabpanel" data-yaml="# grpc-mcp.yaml — mutual TLS
+server:
+  name: &quot;grpc-mcp&quot;
+  transport: &quot;stdio&quot;
+
+endpoints:
+  - name: &quot;secure-internal&quot;
+    address: &quot;secure.internal:443&quot;
+    auth:
+      type: &quot;mtls&quot;
+      mtls:
+        certFile: &quot;/certs/client.pem&quot;
+        keyFile: &quot;/certs/client-key.pem&quot;
+        caFile: &quot;/certs/ca.pem&quot;">
+        <button class="copy-btn" aria-label="Copy mTLS config" onclick="copyText(this.parentElement.dataset.yaml, this)">cp</button>
+        <pre><code><span class="c"># grpc-mcp.yaml — mutual TLS</span>
+<span class="k">server</span>:
+  <span class="k">name</span>: <span class="s">"grpc-mcp"</span>
+  <span class="k">transport</span>: <span class="s">"stdio"</span>
+
+<span class="k">endpoints</span>:
+  - <span class="k">name</span>: <span class="s">"secure-internal"</span>
+    <span class="k">address</span>: <span class="s">"secure.internal:443"</span>
+    <span class="k">auth</span>:
+      <span class="k">type</span>: <span class="s">"mtls"</span>
+      <span class="k">mtls</span>:
+        <span class="k">certFile</span>: <span class="s">"/certs/client.pem"</span>
+        <span class="k">keyFile</span>: <span class="s">"/certs/client-key.pem"</span>
+        <span class="k">caFile</span>: <span class="s">"/certs/ca.pem"</span></code></pre>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">features</div>
+      <div class="features">
+        <div class="feature">
+          <h3>auto-discovery</h3>
+          <p>uses grpc reflection to discover services, methods, and message schemas</p>
+        </div>
+        <div class="feature">
+          <h3>any grpc service</h3>
+          <p>connect to any grpc server — no code generation or proto files needed</p>
+        </div>
+        <div class="feature">
+          <h3>flexible auth</h3>
+          <p>bearer tokens, api keys, mutual tls, or plaintext for local dev</p>
+        </div>
+        <div class="feature">
+          <h3>works everywhere</h3>
+          <p>claude desktop, claude code, cursor, any mcp client. stdio + sse transport</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="links">
+      <a href="https://github.com/peter-trerotola/grpc-mcp">github</a>
+      <span aria-hidden="true">|</span>
+      <a href="https://github.com/peter-trerotola/grpc-mcp/releases">releases</a>
+      <span aria-hidden="true">|</span>
+      <a href="https://github.com/peter-trerotola/grpc-mcp#configuration">docs</a>
+      <span aria-hidden="true">|</span>
+      <a href="https://github.com/peter-trerotola/grpc-mcp/issues">issues</a>
+      <span aria-hidden="true">&nbsp;</span>
+      <span class="cursor" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <script>
+    function showTab(name, btn) {
+      document.querySelectorAll('.config-block').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.config-tab').forEach(el => {
+        el.classList.remove('active');
+        el.setAttribute('aria-selected', 'false');
+      });
+      document.getElementById('tab-' + name).classList.remove('hidden');
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+    }
+
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'ok';
+        setTimeout(() => btn.textContent = 'cp', 1500);
+      }).catch(() => {
+        btn.textContent = '!!';
+        setTimeout(() => btn.textContent = 'cp', 1500);
+      });
+    }
+
+    function copy(id) {
+      const el = document.getElementById(id);
+      const btn = el.querySelector('.copy-btn');
+      const clone = el.cloneNode(true);
+      const cloneBtn = clone.querySelector('.copy-btn');
+      if (cloneBtn) cloneBtn.remove();
+      copyText(clone.textContent.trim(), btn);
+    }
+  </script>
+</body>
+</html>
