@@ -1,0 +1,15 @@
+.git
+.github
+*.md
+.gitignore
+.mcp.json
+.claude/
+.env
+grpc-mcp.yaml
+*.local.yaml
+docker-compose.yaml
+.goreleaser.yml
+release-please-config.json
+.release-please-manifest.json
+*.out
+coverage.html

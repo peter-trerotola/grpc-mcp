@@ -1,0 +1,14 @@
+services:
+  mcp-server:
+    build: .
+    volumes:
+      - ./config.example.yaml:/etc/grpc-mcp/grpc-mcp.yaml:ro
+    stdin_open: true
+
+    # Uncomment for SSE transport
+    # ports:
+    #   - "8080:8080"
+
+    # Uncomment for mTLS cert mounting
+    # volumes:
+    #   - ./certs:/certs:ro
