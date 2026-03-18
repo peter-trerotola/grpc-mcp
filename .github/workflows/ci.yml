@@ -52,7 +52,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Build all targets (GoReleaser snapshot)
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
           args: build --snapshot --clean
