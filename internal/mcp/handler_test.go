@@ -350,9 +350,12 @@ func TestFinalize_GoErrorPath(t *testing.T) {
 	if out == nil || !out.IsError {
 		t.Fatal("expected IsError=true")
 	}
-	text := out.Content[0].(mcp.TextContent).Text
-	if !strings.Contains(text, "setup failed") {
-		t.Errorf("expected error text to contain 'setup failed', got %q", text)
+	textContent, ok := out.Content[0].(mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", out.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "setup failed") {
+		t.Errorf("expected error text to contain 'setup failed', got %q", textContent.Text)
 	}
 }
 
@@ -367,9 +370,12 @@ func TestFinalize_SuccessPath(t *testing.T) {
 	if out == nil || out.IsError {
 		t.Fatal("expected IsError=false for successful response")
 	}
-	text := out.Content[0].(mcp.TextContent).Text
-	if !strings.Contains(text, "\"hello\"") || !strings.Contains(text, "\"world\"") {
-		t.Errorf("expected response JSON in text, got %q", text)
+	textContent, ok := out.Content[0].(mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", out.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "\"hello\"") || !strings.Contains(textContent.Text, "\"world\"") {
+		t.Errorf("expected response JSON in text, got %q", textContent.Text)
 	}
 }
 
