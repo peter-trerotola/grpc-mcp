@@ -3,11 +3,14 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	grpcclient "github.com/peter-trerotola/grpc-mcp/internal/grpc"
 )
 
 func TestFormatGRPCError(t *testing.T) {
@@ -280,3 +283,102 @@ func TestHandler_HandleClientStream_InputValidation(t *testing.T) {
 		t.Errorf("unexpected error: %v", err)
 	}
 }
+
+// TestFinalize_PropagatesGRPCStatusFromResult verifies that gRPC status
+// errors carried in InvokeResult.Error are surfaced as MCP tool errors
+// with the code+message preserved.
+//
+// Regression test for the silent-null bug: the invoker reports gRPC status
+// errors via InvokeResult.Error rather than the returned Go error, and
+// before the fix Handle() would treat such results as success and return
+// `null` to the MCP client with no diagnostic.
+func TestFinalize_PropagatesGRPCStatusFromResult(t *testing.T) {
+	cases := []struct {
+		name      string
+		code      codes.Code
+		msg       string
+		wantCode  string
+		wantInMsg string
+	}{
+		{"invalid_argument", codes.InvalidArgument, "extracted_data must be valid JSON object",
+			"INVALID_ARGUMENT", "extracted_data must be valid JSON object"},
+		{"not_found", codes.NotFound, "user 42 not found", "NOT_FOUND", "user 42 not found"},
+		{"internal", codes.Internal, "intentional failure for testing", "INTERNAL", "intentional failure"},
+		{"unauthenticated", codes.Unauthenticated, "missing token", "UNAUTHENTICATED", "missing token"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			grpcErr := status.Error(tc.code, tc.msg)
+			result := &grpcclient.InvokeResult{Error: grpcErr}
+
+			out, err := finalize(result, nil)
+			if err != nil {
+				t.Fatalf("finalize returned Go error: %v", err)
+			}
+			if out == nil {
+				t.Fatal("nil result")
+			}
+			if !out.IsError {
+				t.Fatal("expected IsError=true for upstream gRPC error, got false (silent-null bug regression)")
+			}
+			if len(out.Content) == 0 {
+				t.Fatal("expected error content")
+			}
+			text, ok := out.Content[0].(mcp.TextContent)
+			if !ok {
+				t.Fatalf("expected TextContent, got %T", out.Content[0])
+			}
+			if !strings.Contains(text.Text, tc.wantCode) {
+				t.Errorf("expected text to contain %q, got %q", tc.wantCode, text.Text)
+			}
+			if !strings.Contains(text.Text, tc.wantInMsg) {
+				t.Errorf("expected text to contain %q, got %q", tc.wantInMsg, text.Text)
+			}
+		})
+	}
+}
+
+// TestFinalize_GoErrorPath verifies that setup-time Go errors (returned
+// alongside the result) still produce MCP tool errors. This is the path
+// that was working before the fix.
+func TestFinalize_GoErrorPath(t *testing.T) {
+	out, err := finalize(nil, fmtError("setup failed"))
+	if err != nil {
+		t.Fatalf("finalize returned Go error: %v", err)
+	}
+	if out == nil || !out.IsError {
+		t.Fatal("expected IsError=true")
+	}
+	textContent, ok := out.Content[0].(mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", out.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "setup failed") {
+		t.Errorf("expected error text to contain 'setup failed', got %q", textContent.Text)
+	}
+}
+
+// TestFinalize_SuccessPath verifies that a populated result with neither
+// error path triggered marshals to a successful tool result.
+func TestFinalize_SuccessPath(t *testing.T) {
+	result := &grpcclient.InvokeResult{Response: map[string]any{"hello": "world"}}
+	out, err := finalize(result, nil)
+	if err != nil {
+		t.Fatalf("finalize returned Go error: %v", err)
+	}
+	if out == nil || out.IsError {
+		t.Fatal("expected IsError=false for successful response")
+	}
+	textContent, ok := out.Content[0].(mcp.TextContent)
+	if !ok {
+		t.Fatalf("expected TextContent, got %T", out.Content[0])
+	}
+	if !strings.Contains(textContent.Text, "\"hello\"") || !strings.Contains(textContent.Text, "\"world\"") {
+		t.Errorf("expected response JSON in text, got %q", textContent.Text)
+	}
+}
+
+// fmtError returns an error with the given message. Used to keep
+// TestFinalize_GoErrorPath dependency-free of fmt.Errorf style choices.
+func fmtError(msg string) error { return errTest(msg) }

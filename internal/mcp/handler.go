@@ -56,10 +56,29 @@ func (h *Handler) Handle(ctx context.Context, request mcp.CallToolRequest) (*mcp
 		result, err = h.handleUnary(ctx, args)
 	}
 
+	return finalize(result, err)
+}
+
+// finalize converts the outputs of an Invoker call into an MCP tool result.
+//
+// Two distinct failure paths must both surface as MCP tool errors:
+//   - The Go error returned alongside the result, used for setup failures
+//     (reflection, message construction, etc.).
+//   - InvokeResult.Error, used by the invoker to carry gRPC status errors
+//     from the upstream server (InvalidArgument, NotFound, Internal, ...).
+//
+// Before this was extracted, only the first path was checked, so non-OK
+// gRPC statuses fell through to formatSuccess(result.Response) where
+// Response is nil — the MCP client received a successful tool call with
+// content "null" and no diagnostic. Now both paths produce an MCP tool
+// error containing the gRPC code and message.
+func finalize(result *grpcclient.InvokeResult, err error) (*mcp.CallToolResult, error) {
 	if err != nil {
 		return formatError(err), nil
 	}
-
+	if result != nil && result.Error != nil {
+		return formatError(result.Error), nil
+	}
 	return formatSuccess(result.Response)
 }
 
