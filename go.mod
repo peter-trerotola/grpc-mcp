@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
-	github.com/fsnotify/fsnotify v1.7.0
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/jhump/protoreflect v1.16.0
 	github.com/mark3labs/mcp-go v0.43.2
 	github.com/spf13/cobra v1.8.1
