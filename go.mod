@@ -10,7 +10,7 @@ require (
 	github.com/mark3labs/mcp-go v0.43.2
 	github.com/spf13/cobra v1.8.1
 	google.golang.org/grpc v1.64.0
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1
 )
 
